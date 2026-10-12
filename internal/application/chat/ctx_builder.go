@@ -86,7 +86,15 @@ func (a *UnifiedAgent) recentHistoryForRAG(userID string) []rag.HistoryMessage {
 	if len(snap) > maxTurns {
 		start = len(snap) - maxTurns
 	}
-	out := make([]rag.HistoryMessage, 0, len(snap)-start)
+	out := make([]rag.HistoryMessage, 0, len(snap)-start+1) // +1 给摘要留位
+	// 会话摘要（方案 D）：恒塞，但指令约束 LLM 仅在当前问题引用更早对话时使用——
+	// 跨窗口指代（"结合我们之前聊的方案"）靠它消解，无关时被改写 LLM 自动忽略
+	if sum := stm.SummarySnapshot(); sum != "" {
+		out = append(out, rag.HistoryMessage{
+			Role:    "system",
+			Content: "以下是更早对话的摘要（仅当用户问题引用更早对话时用于消解指代，否则完全忽略它）：\n" + sum,
+		})
+	}
 	for _, m := range snap[start:] {
 		if m.Role != "user" && m.Role != "assistant" {
 			continue

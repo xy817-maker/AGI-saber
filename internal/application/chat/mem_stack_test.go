@@ -16,7 +16,7 @@ func newTestStack() *memoryStack {
 		MemoryConfig: config.MemoryConfig{
 			ShortTermMaxTurns: 5,
 		},
-	}, nil, nil)
+	}, nil, nil, nil)
 }
 
 // newTestStackWithHydrator 构造带可计数 hydrator 的 memoryStack——
@@ -26,7 +26,7 @@ func newTestStackWithHydrator(stm STMHydrator, pref PrefHydrator) *memoryStack {
 		MemoryConfig: config.MemoryConfig{
 			ShortTermMaxTurns: 5,
 		},
-	}, stm, pref)
+	}, stm, pref, nil)
 }
 
 // TestSTM_PerUserBucket 验证不同用户的 STM 桶完全独立。

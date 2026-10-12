@@ -77,12 +77,20 @@ func (r *LLMRewriter) Rewrite(query string, history []HistoryMessage) []string {
 	var hb strings.Builder
 	if len(history) > 0 {
 		hb.WriteString("最近对话历史（按时间顺序）：\n")
-		// 最多取最近 6 条，避免 prompt 失控
-		start := 0
-		if len(history) > 6 {
-			start = len(history) - 6
+		// system 角色的摘要恒保留；历史消息最多取最近 6 条，避免 prompt 失控
+		var sysMsgs, hist []HistoryMessage
+		for _, m := range history {
+			if m.Role == "system" {
+				sysMsgs = append(sysMsgs, m)
+				continue
+			}
+			hist = append(hist, m)
 		}
-		for _, m := range history[start:] {
+		if len(hist) > 6 {
+			hist = hist[len(hist)-6:]
+		}
+		history = append(sysMsgs, hist...)
+		for _, m := range history {
 			role := m.Role
 			if role == "" {
 				role = "user"
